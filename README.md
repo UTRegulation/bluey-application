@@ -10,19 +10,21 @@
 ### Installation
 
 1. Clone the repository:
-    ```sh
-    git clone https://github.com/UTRegulation/bluey-application
-    cd bluey-application
-    ```
+
+   ```sh
+   git clone https://github.com/UTRegulation/bluey-application
+   cd bluey-application
+   ```
 
 2. Install dependencies:
-    ```sh
-    pnpm install
-    ```
+   ```sh
+   pnpm install
+   ```
 
 ### Running the Application
 
 To start the development server, run:
+
 ```sh
 pnpm dev
 ```
