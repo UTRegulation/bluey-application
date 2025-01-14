@@ -15,40 +15,31 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          
-      - name: Debug directory
-        run: |
-          pwd
-          ls -la
-          
-      - name: Prepare and verify lockfile
-        run: |
-          echo "Verifying lockfile..."
-          chmod 644 pnpm-lock.yaml
-          head -n 5 pnpm-lock.yaml
-          file pnpm-lock.yaml
 
-      - name: Install dependencies
-        run: |
-          pnpm install --frozen-lockfile || {
-            echo "Frozen lockfile installation failed, attempting to repair..."
-            rm -f pnpm-lock.yaml
-            pnpm install --no-frozen-lockfile
-            git diff pnpm-lock.yaml
-          }
-          
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
 
-      - name: Setup pnpm
+      - name: Install pnpm
         uses: pnpm/action-setup@v2
         with:
-          version: 8
+          version: 9
           run_install: false
+
+      - name: Setup pnpm environment
+        shell: bash
+        run: |
+          echo "PNPM_HOME=$HOME/.local/share/pnpm" >> $GITHUB_ENV
+          echo "$HOME/.local/share/pnpm" >> $GITHUB_PATH
+          echo "PATH=$PATH:$HOME/.local/share/pnpm" >> $GITHUB_ENV
+
+      - name: Verify pnpm installation
+        run: |
+          pnpm --version
+          echo "Current PATH: $PATH"
+          echo "PNPM_HOME: $PNPM_HOME"
 
       - name: Get pnpm store directory
         shell: bash
@@ -65,9 +56,14 @@ jobs:
 
       - name: Install dependencies
         run: |
-          echo "Current directory:"
-          pwd
-          echo "Directory contents:"
-          ls -la
           echo "Installing dependencies..."
-          pnpm install --frozen-lockfile
+          pnpm install --no-frozen-lockfile
+
+      - name: Run TypeScript type check
+        run: pnpm tsc --noEmit
+
+      - name: Run ESLint
+        run: pnpm lint
+
+      - name: Check formatting with Prettier
+        run: pnpm prettier --check "**/*.{js,jsx,ts,tsx,json,css,md}"
