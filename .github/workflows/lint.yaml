@@ -23,6 +23,22 @@ jobs:
           pwd
           ls -la
           
+      - name: Prepare and verify lockfile
+        run: |
+          echo "Verifying lockfile..."
+          chmod 644 pnpm-lock.yaml
+          head -n 5 pnpm-lock.yaml
+          file pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: |
+          pnpm install --frozen-lockfile || {
+            echo "Frozen lockfile installation failed, attempting to repair..."
+            rm -f pnpm-lock.yaml
+            pnpm install --no-frozen-lockfile
+            git diff pnpm-lock.yaml
+          }
+          
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
